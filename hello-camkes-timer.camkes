@@ -1,0 +1,86 @@
+/*
+ * CAmkES device driver tutorial.
+ */
+
+import <std_connector.camkes>;
+
+/* import the component definitions */
+import "components/Client/Client.camkes";
+import "components/Timer/Timer.camkes";
+
+
+
+assembly {
+    composition {
+
+        /* Part 1, TASK 1: component instances */
+        /* hint 1: one hardware component and one driver component
+         * hint 2: look at
+         * https://github.com/seL4/camkes-tool/blob/master/docs/index.md#creating-an-application
+         */
+
+        /* Part 2, TASK 1: component instances */
+        /* hint 1: a single TimerDTB component
+         * hint 2: look at
+         * https://github.com/seL4/camkes-tool/blob/master/docs/index.md#creating-an-application
+         */
+
+        component Timerbase timerbase;
+        component Timer timer;
+
+//        component TimerDTB timer;
+
+
+
+        component Client client;
+
+
+        /* Part 1, TASK 2: connections */
+        /* hint 1: use seL4HardwareMMIO to connect device memory
+         * hint 2: use seL4HardwareInterrupt to connect interrupt
+         * hint 3: look at
+         * https://github.com/seL4/camkes-tool/blob/master/docs/index.md#creating-an-application
+         */
+
+        /* Part 2, TASK 2: connections */
+        /* hint 1: connect the dummy_source and timer interfaces
+         * hint 2: the dummy_source should be the 'from' end
+         * hint 3: look at
+         * https://github.com/seL4/camkes-tool/blob/master/docs/index.md#creating-an-application
+         */
+
+        connection seL4HardwareMMIO timer_mem(from timer.reg, to timerbase.reg);
+        connection seL4HardwareInterrupt timer_irq(from timerbase.irq, to timer.irq);
+
+//        connection seL4DTBHardware timer_dtb(from timer.dummy_source, to timer.tmr);
+
+
+        /* timer interface connection */
+
+        connection seL4RPCCall hello_timer(from client.hello, to timer.hello);
+
+    }
+    configuration {
+        /* Part 1, TASK 3: hardware resources */
+        /* Timer and Timerbase:
+         * hint 1: find out the device memory address and IRQ number from the hardware data sheet
+         * hint 2: look at
+         * https://github.com/seL4/camkes-tool/blob/master/docs/index.md#hardware-components
+         */
+
+        /* Part 2, TASK 3: hardware resources */
+        /* TimerDTB:
+         * check components/Timer/Timer.camkes
+         */
+
+        timerbase.reg_paddr = 0xF8001000;   // paddr of mmio registers
+        timerbase.reg_size = 0x1000;        // size of mmio registers
+        timerbase.irq_irq_number = 42;      // timer irq number
+
+
+        /* assign an initial value to semaphore */
+
+        timer.sem_value = 0;
+
+    }
+}
